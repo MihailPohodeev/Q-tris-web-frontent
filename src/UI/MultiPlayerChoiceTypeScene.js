@@ -1,6 +1,9 @@
 import { Container } from "pixi.js";
 import { StandardButton } from './StandardButton.js'
 import {EnterenceScene} from './EnterenceScene'
+import { MultiPlayerRoomCreationScene } from './MultiPlayerRoomCreationScene'
+import { MultiPlayerRoomConnectionScene } from './MultiPlayerRoomConnectionScene'
+
 
 export class MultiPlayerChoiceTypeScene
 {
@@ -20,6 +23,18 @@ export class MultiPlayerChoiceTypeScene
 		back_button.view.position.y = app.screen.height / 2 + 120;
 		this.view = new Container();
 		this.view.addChild(connect_button.view, create_button.view, back_button.view);
+
+		create_button.button.onPress.connect(() => {
+			app.stage.removeChild(globalThis.current_scene.view);
+			globalThis.current_scene = new MultiPlayerRoomCreationScene(app);
+			app.stage.addChild(globalThis.current_scene.view);
+		});
+
+		connect_button.button.onPress.connect(() => {
+			app.stage.removeChild(globalThis.current_scene.view);
+			globalThis.current_scene = new MultiPlayerRoomConnectionScene(app);
+			app.stage.addChild(globalThis.current_scene.view);
+		});
 
 		back_button.button.onPress.connect(() => {
 			app.stage.removeChild(globalThis.current_scene.view);
