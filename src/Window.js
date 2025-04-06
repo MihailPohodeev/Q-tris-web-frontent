@@ -1,6 +1,5 @@
 import { GameField } from "./GameField"
 import { ScoreTable } from "./ScoreTable"
-import { KeyboardController } from "./KeyboardController"
 import { Container } from "pixi.js";
 
 
@@ -12,15 +11,13 @@ export class Window
 		this.height = height * 1.02;
 		this.view = new Container();
 
-		const gameField  = new GameField(width / 2, height);
-		const scoreTable = new ScoreTable(width / 2, height);
+		this.gameField  = new GameField(width / 2, height);
+		this.scoreTable = new ScoreTable(width / 2, height);
 
-		gameField.move((this.width - width) / 2, (this.height - height) / 2);
-		scoreTable.move(this.width / 2 + (this.width - width) / 2, (this.height - height) / 2);
+		this.gameField.move((this.width - width) / 2, (this.height - height) / 2);
+		this.scoreTable.move(this.width / 2 + (this.width - width) / 2, (this.height - height) / 2);
 
-		this.view.addChild(gameField.view, scoreTable.view);
-
-		this.keyboardController = new KeyboardController();
+		this.view.addChild(this.gameField.view, this.scoreTable.view);
 	}
 
 	move(x, y)

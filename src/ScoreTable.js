@@ -1,7 +1,5 @@
 import { Container, Graphics, Text } from "pixi.js";
 
-
-
 export class ScoreTable
 {
 	constructor(width, height)

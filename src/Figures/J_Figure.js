@@ -1,21 +1,46 @@
 import { Figure } from "./Figure"
 
 
-
 export class J_Figure extends Figure
 {
-	constructor(width, height, color)
+	constructor(color)
 	{
-		super(width, height, color)
+		super(color)
 
-		this.elements[1].move(-this.width, 0);
-		this.elements[2].move(0, -this.height);
-		this.elements[3].move(0, -2 * this.height);
+		this.rotationPositions = [
+			[
+				{ x : -1, y : 0  },
+				{ x : 0,  y : -1 },
+				{ x : 0,  y : -2 }
+			],
+
+			[
+				{ x : 0, y : -1 },
+				{ x : 1, y : 0  },
+				{ x : 2, y : 0  }
+			],
+
+			[
+				{ x : 1, y : 0 },
+				{ x : 0, y : 1 },
+				{ x : 0, y : 2 }
+			],
+
+			[
+				{ x : 0,  y : 1 },
+				{ x : -1, y : 0 },
+				{ x : -2, y : 0 }
+			]
+		];
+
+		this.set_position(0, 0);
 	}
 
 	copy()
 	{
-		const result = new J_Figure(this.width, this.height, this.color);
+		const result = new J_Figure(this.color);
+		result.set_position(this.indexes.x, this.indexes.y);
+		result.currentRotatePosition = this.currentRotatePosition;
 		return result;
 	}
 }

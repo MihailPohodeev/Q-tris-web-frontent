@@ -6,6 +6,7 @@ export class Element
 	{
 		this.width = width;
 		this.height= height;
+		this.color = color;
 
 		const shape = new Graphics().roundRect(0, 0, width, height, 0).fill(color);
 

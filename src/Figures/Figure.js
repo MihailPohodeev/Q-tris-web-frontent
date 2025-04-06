@@ -3,19 +3,17 @@ import { Element } from "./Element"
 
 export class Figure
 {
-	constructor(width, height, color)
+	constructor(color)
 	{
-		this.width = width;
-		this.height = height;
 		this.color = color;
-		
-		this.view = new Container();
-		this.elements = new Array(4);
-		for (let i = 0; i < 4; i++)
-		{
-		    this.elements[i] = new Element(width, height, color);
-		    this.view.addChild(this.elements[i].view);
-		}
+
+		this.rotationPositions = [];
+		this.currentRotatePosition = 0;
+
+		this.indexes = {
+			x : 0,
+			y : 0
+		};
 	}
 
 	copy()
@@ -23,15 +21,45 @@ export class Figure
 		throw new Error('The copy() method must be overrided in the subclass.');
 	}
 
-	// move(x, y)
-	// {
-	// 	this.position.x += x;
-	// 	this.position.y += y;
-	// }
+	move(x, y)
+	{
+		this.indexes.x += x;
+		this.indexes.y += y;
+	}
 
-	// set_position(x, y)
-	// {
-	// 	this.position.x = x;
-	// 	this.position.y = y;
-	// }
+	set_position(x, y)
+	{
+		this.indexes.x = x;
+		this.indexes.y = y;
+	}
+
+	get_all_elements()
+	{
+		const result = [];
+
+		result.push(
+			{
+				x : this.indexes.x,
+				y : this.indexes.y,
+				color : this.color
+			}
+		);
+
+		for (let i = 0 ; i < 3 ; i++)
+		{
+			result.push(
+				{
+					x : this.indexes.x + this.rotationPositions[this.currentRotatePosition][i].x,
+					y : this.indexes.y + this.rotationPositions[this.currentRotatePosition][i].y,
+					color : this.color
+				}
+			);
+		}
+		return result;
+	}
+
+	rotate_right()
+	{
+		this.currentRotatePosition += 1;
+	}
 }
