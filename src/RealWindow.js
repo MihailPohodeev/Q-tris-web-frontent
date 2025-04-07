@@ -41,9 +41,15 @@ export class RealWindow extends Window
 		this.timeOut = 1.0 / (this.level / 0.5);
 	}
 
+	set_start_level(level)
+	{
+		this.level = level;
+		this.timeOut = 1.0 / (this.level / 0.5);
+	}
+
 	update()
 	{
-		// current figure movement and rotation.
+		// move current figure left.
 		if (this.keyboardController.isKeyPressedOnce('ArrowLeft'))
 		{
 			let isCanMoveLeft = true;
@@ -60,7 +66,7 @@ export class RealWindow extends Window
 				this.currentFigure.move(-1, 0);
 		}
 
-
+		// move current figure right.
 		if (this.keyboardController.isKeyPressedOnce('ArrowRight'))
 		{
 			let isCanMoveRight = true;
@@ -77,10 +83,33 @@ export class RealWindow extends Window
 				this.currentFigure.move(1, 0);
 		}
 
-
+		// rotate current figure.
 		if (this.keyboardController.isKeyPressedOnce('Space'))
 		{
 			this.currentFigure.rotate_right();
+		}
+
+		// drop figure.
+		if (this.keyboardController.isKeyPressedOnce('ArrowUp'))
+		{
+			let isStop = false;
+
+			while (!isStop)
+			{
+				const elems = this.currentFigure.get_all_elements();
+				for (let i = 0; i < 4; i++)
+				{
+					const x = elems[i].x;
+					const y = elems[i].y;
+
+					if (y >= 19 || (x >= 0 && x <= 9 && y >= 0 && this.gameField.matrix.matrix[y + 1][x]))
+					{
+						isStop = true;
+					}
+				}
+				if (!isStop)
+					this.currentFigure.move(0, 1);
+			}
 		}
 
 		// make a tick.
@@ -112,6 +141,7 @@ export class RealWindow extends Window
 				this.currentFigure = this.figuresArray[randomInt].copy();
 				this.currentFigure.set_position(5, 1);
 
+				let countOfDestroyedLines = 0;
 				// destroying filled lines.
 				for (let i = 0; i < 20; i++)
 				{
@@ -124,6 +154,7 @@ export class RealWindow extends Window
 
 					if (isNeedToDestroyLine)
 					{
+						countOfDestroyedLines++;
 						for (let j = i; j > 0; j--)
 						{
 							for (let k = 0; k < 10; k++)
@@ -133,12 +164,18 @@ export class RealWindow extends Window
 						}
 					}
 				}
+				this.lines += countOfDestroyedLines;
+				this.timeOut = 1.0 / (this.level / 0.5);
 			}
 			else
 			{
 				this.currentFigure.move(0, 1);
 			}
 			
+			this.scoreTable.set_score(this.score);
+			this.scoreTable.set_level(this.level);
+			this.scoreTable.set_lines(this.lines);
+
 			globalThis.gameTimer = 0.0;
 		}
 

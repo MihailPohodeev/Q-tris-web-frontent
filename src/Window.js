@@ -18,6 +18,8 @@ export class Window
 		this.scoreTable.move(this.width / 2 + (this.width - width) / 2, (this.height - height) / 2);
 
 		this.view.addChild(this.gameField.view, this.scoreTable.view);
+
+		this.username = "no-name"
 	}
 
 	move(x, y)
@@ -30,6 +32,12 @@ export class Window
 	{
 		this.view.position.x = x;
 		this.view.position.y = y;
+	}
+
+	set_username(username)
+	{
+		this.username = username;
+		this.scoreTable.set_username(username);
 	}
 
 	update() {

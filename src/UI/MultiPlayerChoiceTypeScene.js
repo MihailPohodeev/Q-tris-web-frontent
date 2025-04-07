@@ -42,4 +42,6 @@ export class MultiPlayerChoiceTypeScene
 			app.stage.addChild(globalThis.current_scene.view);
 		});
 	}
+
+	update() {}
 }

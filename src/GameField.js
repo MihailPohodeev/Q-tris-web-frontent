@@ -9,7 +9,8 @@ export class GameField
 		this.width  = width;
 		this.height = height;
 
-		const background = new Graphics().roundRect(0, 0, width, height, 0).fill(0x999999);
+		const background = new Graphics().roundRect(0, 0, width, height, 0).fill(0xaaaaaa);
+		background.alpha = 0.8;
 
 		this.matrix 		= new Matrix(); // Matrix for elements.
 		this.figureMatrix 	= new Matrix(); // Matrix for figure.

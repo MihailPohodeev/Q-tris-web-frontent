@@ -102,4 +102,6 @@ export class MultiPlayerRoomConnectionScene
 			app.stage.addChild(globalThis.current_scene.view);
 		});
 	}
+
+    update() {}
 }

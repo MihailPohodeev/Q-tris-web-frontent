@@ -2,6 +2,7 @@ import { Container, Graphics, Text } from "pixi.js";
 import { StandardButton } from './StandardButton.js'
 import { Input } from '@pixi/ui';
 import {EnterenceScene} from './EnterenceScene'
+import { SinglePlayerScene } from "./SinglePlayerScene"
 
 
 export class SinglePlayerSettingsScene
@@ -66,10 +67,26 @@ export class SinglePlayerSettingsScene
 		this.view = new Container();
 		this.view.addChild(start_level_value_label, input, start_button.view, back_button.view);
 
+		start_button.button.onPress.connect(() => {
+			app.stage.removeChild(globalThis.current_scene.view);
+			globalThis.current_scene = new SinglePlayerScene(app);
+			globalThis.current_scene.set_start_level(input.value);
+			console.log(input.value);
+
+			app.ticker.add((time) => {
+			    	globalThis.gameTimer += time.deltaTime / 60;
+			    	globalThis.current_scene.update();
+			});
+
+			app.stage.addChild(globalThis.current_scene.view);
+		});
+
 		back_button.button.onPress.connect(() => {
 			app.stage.removeChild(globalThis.current_scene.view);
 			globalThis.current_scene = new EnterenceScene(app);
 			app.stage.addChild(globalThis.current_scene.view);
 		});
 	}
+
+	update() {}
 }

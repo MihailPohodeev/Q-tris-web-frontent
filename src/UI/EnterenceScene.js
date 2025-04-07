@@ -36,4 +36,6 @@ export class EnterenceScene
 		});
 		sett_button.button.onPress.connect(() => {console.log('settings');});
 	}
+
+	update() {}
 }
