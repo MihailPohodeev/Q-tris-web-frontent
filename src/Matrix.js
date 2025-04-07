@@ -15,12 +15,8 @@ export class Matrix
 
 	insert_element(element)
 	{
-		if (element.x < 0 || element.x > 9 || element.y < 0 || element.y > 19)
-		{
-			throw new Error('Invalid indexes coordinats in element param :)');
-		}
-
-		this.matrix[element.y][element.x] = { color : element.color };
+		if (!(element.x < 0 || element.x > 9 || element.y < 0 || element.y > 19))
+			this.matrix[element.y][element.x] = { color : element.color };
 	}
 
 	copy()

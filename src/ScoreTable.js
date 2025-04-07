@@ -25,7 +25,7 @@ export class ScoreTable
 
 		const linesLabel = new Text(
 			{
-			text : "LINES : 0",
+			text : "LINES  : 0",
 			style: {
                 fontFamily: 'ChaChicle', // Можно указывать несколько шрифтов
                 fontSize: fontSize,

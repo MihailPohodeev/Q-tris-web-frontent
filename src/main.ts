@@ -23,7 +23,9 @@ import { RealWindow } from "./RealWindow"
   globalThis.current_scene.set_position((app.screen.width - sizeXY) / 2, (app.screen.height - sizeXY) / 2);
   app.stage.addChild(globalThis.current_scene.view);
 
+  globalThis.gameTimer = 0.0;
   app.ticker.add((time) => {
+    globalThis.gameTimer += time.deltaTime / 60;
     globalThis.current_scene.update();
   })
 })();

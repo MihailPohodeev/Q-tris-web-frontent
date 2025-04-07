@@ -60,6 +60,11 @@ export class Figure
 
 	rotate_right()
 	{
-		this.currentRotatePosition += 1;
+		this.currentRotatePosition = (this.currentRotatePosition + 1) % this.rotationPositions.length;
+	}
+
+	rotate_left()
+	{
+		this.currentRotatePosition = (this.rotationPositions.length + this.currentRotatePosition - 1) % this.rotationPositions.length;
 	}
 }

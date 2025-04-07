@@ -1,71 +1,70 @@
 export class KeyboardController {
   constructor() {
-    // Состояние клавиш
+    // Состояние удержания клавиш
     this.keys = {
       ArrowUp: false,
       ArrowDown: false,
       ArrowLeft: false,
       ArrowRight: false,
-      Space: false
+      Space: false,
+      Escape: false
+    };
+    
+    // Флаги однократных нажатий (для всех клавиш)
+    this.keyPressedOnce = {
+      ArrowUp: false,
+      ArrowDown: false,
+      ArrowLeft: false,
+      ArrowRight: false,
+      Space: false,
+      Escape: false
     };
 
-    // Привязка контекста для обработчиков
+    // Привязка контекста
     this.handleKeyDown = this.handleKeyDown.bind(this);
     this.handleKeyUp = this.handleKeyUp.bind(this);
 
-    // Инициализация
     this.init();
   }
 
   init() {
-    // Подписываемся на события клавиатуры
     window.addEventListener('keydown', this.handleKeyDown);
     window.addEventListener('keyup', this.handleKeyUp);
   }
 
   handleKeyDown(event) {
-    switch(event.code) {
-      case 'ArrowUp':
-        this.keys.ArrowUp = true;
-        break;
-      case 'ArrowDown':
-        this.keys.ArrowDown = true;
-        break;
-      case 'ArrowLeft':
-        this.keys.ArrowLeft = true;
-        break;
-      case 'ArrowRight':
-        this.keys.ArrowRight = true;
-        break;
-      case 'Space':
-        this.keys.Space = true;
-        break;
+    const key = event.code;
+    
+    // Если клавиша есть в нашем списке
+    if (this.keys.hasOwnProperty(key)) {
+      if (!this.keys[key]) { // Если клавиша ещё не была нажата
+        this.keyPressedOnce[key] = true; // Запоминаем однократное нажатие
+      }
+      this.keys[key] = true;
     }
   }
 
   handleKeyUp(event) {
-    switch(event.code) {
-      case 'ArrowUp':
-        this.keys.ArrowUp = false;
-        break;
-      case 'ArrowDown':
-        this.keys.ArrowDown = false;
-        break;
-      case 'ArrowLeft':
-        this.keys.ArrowLeft = false;
-        break;
-      case 'ArrowRight':
-        this.keys.ArrowRight = false;
-        break;
-      case 'Space':
-        this.keys.Space = false;
-        break;
+    const key = event.code;
+    
+    if (this.keys.hasOwnProperty(key)) {
+      this.keys[key] = false;
+      this.keyPressedOnce[key] = false; // Сбрасываем флаг однократного нажатия
     }
   }
 
-  // Проверка состояния клавиш
+  // Проверка удержания клавиши
   isKeyPressed(key) {
     return this.keys[key] || false;
+  }
+
+  // Проверка однократного нажатия (автоматически сбрасывает флаг)
+  isKeyPressedOnce(key) {
+    if (this.keyPressedOnce[key]) {
+      this.keyPressedOnce[key] = false; // Сброс флага после проверки
+      return true;
+    }
+    return false;
   }
 
   // Уничтожение контроллера
