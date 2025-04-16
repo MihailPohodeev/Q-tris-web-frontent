@@ -52,40 +52,6 @@ export class MultiPlayerRoomConnectionScene
             console.log('item_' + a.num);
         };
 
-        const items = [];
-        for (let i = 0; i < itemsAmount; i++)
-        {
-            const button = new FancyButton({
-                defaultView: new Graphics()
-                    .roundRect(0, 0, elementsWidth, elementsHeight, radius)
-                    .fill(0xbbbbbb),
-                hoverView: new Graphics()
-                    .roundRect(0, 0, elementsWidth, elementsHeight, radius)
-                    .fill(0x999999),
-                pressedView: new Graphics()
-                    .roundRect(0, 0, elementsWidth, elementsHeight, radius)
-                    .fill(0x666666),
-                    text: new Text({
-                 	text: `Item ${i + 1}`,
-               		style: {
-                        fontFamily: 'ChaChicle', // Можно указывать несколько шрифтов
-                        fontSize: 20,
-                        fill: fontColor, // Используем переданный цвет
-                        fontWeight: 'bold',
-                        letterSpacing: 0.5,
-                    }
-              	}),
-            });
-
-            button.num = i;
-            button.anchor.set(0);
-            button.onPress.connect(() => item_action(button));
-
-            items.push(button);
-        }
-
-        scrollBox.addItems(items);
-
         scrollBox.position.x = (app.screen.width - list_width) / 2;
         scrollBox.position.y = (app.screen.height - list_height) / 2 - 120;
 
@@ -101,6 +67,56 @@ export class MultiPlayerRoomConnectionScene
 			globalThis.current_scene = new EnterenceScene(app);
 			app.stage.addChild(globalThis.current_scene.view);
 		});
+
+        const request = { command : "get_rooms_list" };
+
+        globalThis.socket.onmessage = (event) => {
+            console.log('Received data:', event.data);
+            const response = JSON.parse(event.data);
+            
+            if (response.command == "get_rooms_list_response")
+            {
+                if (response.status == "success")
+                {
+                    const items = [];
+                    for (let i = 0; i < response.body.length; i++)
+                    {
+                        const button = new FancyButton({
+                            defaultView: new Graphics()
+                                .roundRect(0, 0, elementsWidth, elementsHeight, radius)
+                                .fill(0xbbbbbb),
+                            hoverView: new Graphics()
+                                .roundRect(0, 0, elementsWidth, elementsHeight, radius)
+                                .fill(0x999999),
+                            pressedView: new Graphics()
+                                .roundRect(0, 0, elementsWidth, elementsHeight, radius)
+                                .fill(0x666666),
+                                text: new Text({
+                                text: response.body[i].room_name,
+                                style: {
+                                    fontFamily: 'ChaChicle', // Можно указывать несколько шрифтов
+                                    fontSize: 20,
+                                    fill: fontColor, // Используем переданный цвет
+                                    fontWeight: 'bold',
+                                    letterSpacing: 0.5,
+                                }
+                            }),
+                        });
+
+                        button.num = i;
+                        button.anchor.set(0);
+                        button.onPress.connect(() => item_action(button));
+
+                        items.push(button);
+                    }
+                    scrollBox.addItems(items);
+                }
+                else 
+                    console.log("Can't list!");
+            }
+        };
+
+        globalThis.socket.send(JSON.stringify(request));
 	}
 
     update() {}

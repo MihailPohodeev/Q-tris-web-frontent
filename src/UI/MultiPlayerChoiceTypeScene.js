@@ -41,6 +41,44 @@ export class MultiPlayerChoiceTypeScene
 			globalThis.current_scene = new EnterenceScene(app);
 			app.stage.addChild(globalThis.current_scene.view);
 		});
+
+		if (globalThis.socket == undefined)
+		{
+			globalThis.socket = new WebSocket('ws://localhost:38532/');
+
+			globalThis.socket.onopen = () => {
+				console.log('WebSocket connection established');
+
+				const request = {
+					command : "set_username",
+					username : "barbos",
+				};
+
+				globalThis.socket.send(JSON.stringify(request));
+			};
+
+			globalThis.socket.onmessage = (event) => {
+				console.log('Received data:', event.data);
+	            const response = JSON.parse(event.data);
+	            
+	            if (response.command == "set_username_response")
+	            {
+	                if (response.status == "success")
+	                    console.log(event.data);
+	                else 
+	                    console.log("Can't list!");
+	            }
+			};
+
+
+			globalThis.socket.onclose = () => {
+				console.log('WebSocket connection closed');
+			};
+
+			globalThis.socket.onerror = (error) => {
+				console.error('WebSocket error:', error);
+			};
+		}
 	}
 
 	update() {}

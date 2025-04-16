@@ -108,6 +108,37 @@ export class MultiPlayerRoomCreationScene
 		this.view = new Container();
 		this.view.addChild(players_count_value_label, figures_spawn_mode_label, start_level_value_label, players_count_input, start_level_input, start_button.view, back_button.view);
 
+		start_button.button.onPress.connect(() => {
+
+			const request = {
+				command : "create_room",
+				queue_mode : "same",
+				players_count : parseInt(players_count_input.value),
+				start_level : parseInt(start_level_input.value),
+				room_name : "komnata"
+			};
+
+			globalThis.socket.onmessage = (event) => {
+				console.log('Received data:', event.data);
+
+				const response = JSON.parse(event.data);
+
+				if (response.command == "create_room_response")
+				{
+					if (response.status == "success")
+						console.log("Room Successfully Created!");
+					else 
+						console.log("Room Not Created!");
+				}
+			};
+
+			globalThis.socket.send(JSON.stringify(request));
+
+			// app.stage.removeChild(globalThis.current_scene.view);
+			// globalThis.current_scene = new EnterenceScene(app);
+			// app.stage.addChild(globalThis.current_scene.view);
+		});
+
 		back_button.button.onPress.connect(() => {
 			app.stage.removeChild(globalThis.current_scene.view);
 			globalThis.current_scene = new EnterenceScene(app);
