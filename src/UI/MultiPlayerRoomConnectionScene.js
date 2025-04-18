@@ -1,7 +1,9 @@
 import { Container, Graphics, Text, Sprite, Texture } from "pixi.js";
 import { StandardButton } from './StandardButton.js'
 import { List, ScrollBox, FancyButton } from '@pixi/ui';
-import {EnterenceScene} from './EnterenceScene'
+import { EnterenceScene } from './EnterenceScene'
+import { MultiPlayerLobbyScene } from './MultiPlayerLobbyScene'
+
 
 
 export class MultiPlayerRoomConnectionScene
@@ -14,26 +16,12 @@ export class MultiPlayerRoomConnectionScene
         const list_width = 500;
         const list_height= 400;
 
-		const items_full = [
-		    "Первый элемент списка",
-		    "Второй элемент",
-		    "Третий пункт",
-		    "Четвертый элемент списка",
-		    "Пятый и последний элемент",
-		    "Шестой дополнительный элемент",
-		    "Седьмой элемент для демонстрации скролла",
-		    "Восьмой элемент списка",
-		    "Девятый пункт меню",
-		    "Десятый завершающий элемент"
-		];
-
         const elementsWidth = 480;
         const elementsHeight = 50;
         const radius = 10;
         let currentSizeID = 0;
         const fontColor = '#000000';
     	const backgroundColor = '#FFFFFF';
-    	const itemsAmount = items_full.length;
     	// const type = [null, ...LIST_TYPE];
         
         // Component usage !!!
@@ -47,11 +35,6 @@ export class MultiPlayerRoomConnectionScene
             padding: 10,
         });
 
-        const item_action = (a) =>
-        {
-            console.log('item_' + a.num);
-        };
-
         scrollBox.position.x = (app.screen.width - list_width) / 2;
         scrollBox.position.y = (app.screen.height - list_height) / 2 - 120;
 
@@ -62,10 +45,19 @@ export class MultiPlayerRoomConnectionScene
 		this.view = new Container();
 		this.view.addChild(scrollBox, back_button.view);
 
-		back_button.button.onPress.connect(() => {
+        const item_action = (room_id) => {
+            const request = {
+                command : "connect_to_room",
+                room_id : room_id
+            };
+
+            globalThis.socket.send(JSON.stringify(request));
+        };
+
+		back_button.button.onPress.connect((room_id) => {
 			app.stage.removeChild(globalThis.current_scene.view);
-			globalThis.current_scene = new EnterenceScene(app);
-			app.stage.addChild(globalThis.current_scene.view);
+            globalThis.current_scene = new EnterenceScene(app);
+            app.stage.addChild(globalThis.current_scene.view); 
 		});
 
         const request = { command : "get_rooms_list" };
@@ -92,11 +84,11 @@ export class MultiPlayerRoomConnectionScene
                                 .roundRect(0, 0, elementsWidth, elementsHeight, radius)
                                 .fill(0x666666),
                                 text: new Text({
-                                text: response.body[i].room_name,
+                                text: response.body[i].room_name + " (" + response.body[i].players_count + "/" + response.body[i].players_capacity + ")",
                                 style: {
-                                    fontFamily: 'ChaChicle', // Можно указывать несколько шрифтов
+                                    fontFamily: 'ChaChicle',
                                     fontSize: 20,
-                                    fill: fontColor, // Используем переданный цвет
+                                    fill: fontColor,
                                     fontWeight: 'bold',
                                     letterSpacing: 0.5,
                                 }
@@ -105,7 +97,7 @@ export class MultiPlayerRoomConnectionScene
 
                         button.num = i;
                         button.anchor.set(0);
-                        button.onPress.connect(() => item_action(button));
+                        button.onPress.connect(() => item_action(response.body[i].room_id));
 
                         items.push(button);
                     }
@@ -113,6 +105,17 @@ export class MultiPlayerRoomConnectionScene
                 }
                 else 
                     console.log("Can't list!");
+            }
+            else if (response.command == "connect_to_room_response")
+            {
+                if (response.status == "success")
+                {
+                    app.stage.removeChild(globalThis.current_scene.view);
+                    globalThis.current_scene = new MultiPlayerLobbyScene(app);
+                    app.stage.addChild(globalThis.current_scene.view);
+                }
+                else
+                    console.log("Can't connected to the room!");
             }
         };
 
