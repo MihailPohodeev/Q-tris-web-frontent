@@ -17,7 +17,8 @@ import { MultiPlayerRoomConnectionScene } from './UI/MultiPlayerRoomConnectionSc
     data: { family: 'ChaChicle' }  // Assign a font-family name
   });
 
-  globalThis.gameTimer = 0.0;
+  globalThis.gameTimer    = 0.0;
+  globalThis.socketTimer  = 0.0;
   globalThis.current_scene = new EnterenceScene(app);
   app.stage.addChild(globalThis.current_scene.view);
 })();

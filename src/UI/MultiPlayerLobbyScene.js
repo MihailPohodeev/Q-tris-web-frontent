@@ -1,7 +1,7 @@
-import { Container, Text } from "pixi.js";
-import { StandardButton } from './StandardButton.js'
-import { EnterenceScene } from './EnterenceScene'
-
+import { Container, Text } 	from "pixi.js";
+import { StandardButton } 	from './StandardButton.js'
+import { EnterenceScene } 	from './EnterenceScene'
+import { MultiPlayerScene }	from './MultiPlayerScene'
 
 
 export class MultiPlayerLobbyScene
@@ -35,7 +35,7 @@ export class MultiPlayerLobbyScene
 
 			const request = {
 				command : "set_ready_value",
-				client_id : 0,
+				client_id : globalThis.myID,
 				ready_value : this.isReady
 			};
 			globalThis.socket.send(JSON.stringify(request));
@@ -50,10 +50,9 @@ export class MultiPlayerLobbyScene
 		});
 
 		globalThis.socket.onmessage = (event) => {
-				console.log('Received data:', event.data);
 	            const response = JSON.parse(event.data);
 	            
-	            if (response.command == "room_clients_info")
+	            if (response.command == "room_clients_info_response")
 	            {
 	            	if (response.status == "success")
 	            	{
@@ -62,6 +61,11 @@ export class MultiPlayerLobbyScene
 		            	{
 		            		this.clients_label.text += response.clients[i].id + " " + response.clients[i].username + "\n";
 		            	}
+
+		            	globalThis.myID = response.client_id;
+
+		            	this.isReady = false;
+		            	ready_button.set_color('#990000');
 	            	}
 	            }
 	            else if (response.command == "set_ready_value_response")
@@ -74,6 +78,29 @@ export class MultiPlayerLobbyScene
 	            			ready_button.set_color('#990000');
 	            	}
 	            }
+	           	else if (response.command == "can_start_game")
+	           	{
+	           		app.stage.removeChild(globalThis.current_scene.view);
+					globalThis.current_scene = new MultiPlayerScene(app, response.room_parameters);
+
+					app.ticker.add((time) => {
+					    	globalThis.gameTimer += time.deltaTime / 60;
+					    	globalThis.current_scene.update();
+					});
+
+					app.ticker.add( async (time) => {
+							globalThis.socketTimer += time.deltaTime / 60;
+
+							if (globalThis.socketTimer > 0.2)
+							{
+					    		await globalThis.current_scene.window.send_data();
+					    		globalThis.socketTimer = 0.0;
+					    	}
+
+					});
+
+					app.stage.addChild(globalThis.current_scene.view);
+	           	}
 			};
 
 		const request = {

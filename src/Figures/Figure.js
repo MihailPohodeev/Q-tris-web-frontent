@@ -16,6 +16,11 @@ export class Figure
 		};
 	}
 
+	set_color(color)
+	{
+		this.color = color;
+	}
+
 	copy()
 	{
 		throw new Error('The copy() method must be overrided in the subclass.');
@@ -66,5 +71,10 @@ export class Figure
 	rotate_left()
 	{
 		this.currentRotatePosition = (this.rotationPositions.length + this.currentRotatePosition - 1) % this.rotationPositions.length;
+	}
+
+	set_rotate(arg)
+	{
+		this.currentRotatePosition = arg;
 	}
 }

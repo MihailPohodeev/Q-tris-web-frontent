@@ -21,6 +21,11 @@ export class GameField
 		this.view.addChild(this.elem_area);
 	}
 
+	clear_matrix()
+	{
+		this.matrix = new Matrix();
+	}
+
 	move(x, y)
 	{
 		this.view.position.x += x;

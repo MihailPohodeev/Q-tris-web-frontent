@@ -105,7 +105,7 @@ export class MultiPlayerChoiceTypeScene
 
 		if (globalThis.socket == undefined)
 		{
-			globalThis.socket = new WebSocket('ws://localhost:38532/');
+			globalThis.socket = new WebSocket('ws://192.168.1.6:38532/');
 
 			globalThis.socket.onopen = () => {
 				console.log('WebSocket connection established');

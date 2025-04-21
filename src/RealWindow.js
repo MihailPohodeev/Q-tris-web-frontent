@@ -26,8 +26,8 @@ export class RealWindow extends Window
 		this.figuresArray[5] = new I_Figure(0x00ffff);
 		this.figuresArray[6] = new O_Figure(0x0000ff);
 
-		const randomInt = Math.floor(Math.random() * 7);
-		this.currentFigure = this.figuresArray[randomInt].copy();
+		this.currentFigureIndex = Math.floor(Math.random() * 7);
+		this.currentFigure = this.figuresArray[this.currentFigureIndex].copy();
 		this.currentFigure.set_position(5, 1);
 
 		this.gameField.insert_current_figure(this.currentFigure);
@@ -39,12 +39,60 @@ export class RealWindow extends Window
 		this.lines = 0;
 		this.level = 1;
 		this.timeOut = 1.0 / (this.level / 0.5);
+
+		this.lastSendTime = 0;
+        this.sendInterval = 100;
 	}
 
 	set_start_level(level)
 	{
 		this.level = level;
 		this.timeOut = 1.0 / (this.level / 0.5);
+	}
+
+	async send_data() {
+	    try {
+	    	// Throttle sends to avoid flooding
+	        const now = Date.now();
+	        if (now - this.lastSendTime < this.sendInterval) {
+	            return;
+	        }
+	        // Проверяем наличие сокета и его состояние
+	        if (!globalThis.socket || globalThis.socket.readyState !== WebSocket.OPEN) {
+	        	return;
+	        }
+
+	        // Подготавливаем данные
+	        const matrix = this.gameField.matrix.matrix;
+	        const dataFrame = {
+	        	command : "data_frame",
+	        	content : [],
+	        	figure  : { index : 		this.currentFigureIndex,
+	        				x : 			this.currentFigure.indexes.x,
+	        				y : 			this.currentFigure.indexes.y,
+	        				rotate_pos : 	this.currentFigure.currentRotatePosition,
+	        				color : 		this.currentFigure.color
+	        				}
+	        };
+
+	        for (let i = 0; i < 20; i++)
+	        {
+	        	for (let j = 0; j < 10; j++)
+	        	{
+	        		if (matrix[i][j])
+	        			dataFrame.content.push({x : j, y : i, color : matrix[i][j].color});
+	        	}
+	        }
+
+	        // Simple send without Promise (WebSocket is already async)
+            globalThis.socket.send(JSON.stringify(dataFrame));
+            this.lastSendTime = now;
+
+	        console.log('Data sent successfully');
+	    } catch (error) {
+	        console.error('Failed to send data:', error);
+	        // Здесь можно добавить логику повторной отправки или уведомления пользователя
+	    }
 	}
 
 	update()
@@ -137,8 +185,8 @@ export class RealWindow extends Window
 			{
 				this.gameField.insert_const_figure(this.currentFigure);
 
-				const randomInt = Math.floor(Math.random() * 7);
-				this.currentFigure = this.figuresArray[randomInt].copy();
+				this.currentFigureIndex = Math.floor(Math.random() * 7);
+				this.currentFigure = this.figuresArray[this.currentFigureIndex].copy();
 				this.currentFigure.set_position(5, 1);
 
 				let countOfDestroyedLines = 0;
