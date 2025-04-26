@@ -35,19 +35,29 @@ export class RealWindow extends Window
 
 		this.keyboardController = new KeyboardController();
 
-		this.score = 0;
-		this.lines = 0;
-		this.level = 1;
-		this.timeOut = 1.0 / (this.level / 0.5);
+		this.score 				= 0;
+		this.lines 				= 0;
+		this.level 				= 1;
+		this.currentLinesLimit 	= 10;
+		this.timeOut 			= 1.0 / (this.level / 0.5);
 
-		this.lastSendTime = 0;
-        this.sendInterval = 100;
+		this.lastSendTime 		= 0;
+        this.sendInterval 		= 100;
+
+        this.isLoose 			= false;
 	}
 
 	set_start_level(level)
 	{
 		this.level = level;
 		this.timeOut = 1.0 / (this.level / 0.5);
+	}
+
+	update_current_figure()
+	{
+		this.currentFigureIndex = Math.floor(Math.random() * 7);
+		this.currentFigure = this.figuresArray[this.currentFigureIndex].copy();
+		this.currentFigure.set_position(5, 1);
 	}
 
 	async send_data() {
@@ -62,17 +72,25 @@ export class RealWindow extends Window
 	        	return;
 	        }
 
+	        if (!this.currentFigure)
+	        	return;
+
 	        // Подготавливаем данные
 	        const matrix = this.gameField.matrix.matrix;
 	        const dataFrame = {
 	        	command : "data_frame",
-	        	content : [],
-	        	figure  : { index : 		this.currentFigureIndex,
-	        				x : 			this.currentFigure.indexes.x,
-	        				y : 			this.currentFigure.indexes.y,
-	        				rotate_pos : 	this.currentFigure.currentRotatePosition,
-	        				color : 		this.currentFigure.color
-	        				}
+	        	body : {
+				        	content : [],
+				        	figure  : { index : 		this.currentFigureIndex,
+				        				x : 			this.currentFigure.indexes.x,
+				        				y : 			this.currentFigure.indexes.y,
+				        				rotate_pos : 	this.currentFigure.currentRotatePosition,
+				        				color : 		this.currentFigure.color,
+				        				},
+				        	level 	: this.level,
+				        	lines 	: this.lines,
+				        	score 	: this.score,
+	        			},
 	        };
 
 	        for (let i = 0; i < 20; i++)
@@ -80,15 +98,13 @@ export class RealWindow extends Window
 	        	for (let j = 0; j < 10; j++)
 	        	{
 	        		if (matrix[i][j])
-	        			dataFrame.content.push({x : j, y : i, color : matrix[i][j].color});
+	        			dataFrame.body.content.push({x : j, y : i, color : matrix[i][j].color});
 	        	}
 	        }
 
 	        // Simple send without Promise (WebSocket is already async)
             globalThis.socket.send(JSON.stringify(dataFrame));
             this.lastSendTime = now;
-
-	        console.log('Data sent successfully');
 	    } catch (error) {
 	        console.error('Failed to send data:', error);
 	        // Здесь можно добавить логику повторной отправки или уведомления пользователя
@@ -161,10 +177,11 @@ export class RealWindow extends Window
 		}
 
 		// make a tick.
-		if ((globalThis.gameTimer > this.timeOut) || (this.keyboardController.isKeyPressed('ArrowDown') && globalThis.gameTimer > (this.timeOut / 4.0)))
+		if ((!this.isLoose) && ((globalThis.gameTimer > this.timeOut) || (this.keyboardController.isKeyPressed('ArrowDown') && globalThis.gameTimer > (this.timeOut / 4.0))))
 		{
 			// if the elems or border under current figure.
 			let isNeedToFixFigure = false;
+
 			const elems = this.currentFigure.get_all_elements();
 			for (let i = 0; i < 4; i++)
 			{
@@ -185,9 +202,24 @@ export class RealWindow extends Window
 			{
 				this.gameField.insert_const_figure(this.currentFigure);
 
-				this.currentFigureIndex = Math.floor(Math.random() * 7);
-				this.currentFigure = this.figuresArray[this.currentFigureIndex].copy();
-				this.currentFigure.set_position(5, 1);
+				const elems = this.currentFigure.get_all_elements();
+				for (let i = 0; i < 4; i++)
+				{
+					const y = elems[i].y;
+
+					if (y == 0)
+					{
+						this.isLoose = true;
+						const request = 
+						{
+							command : "loose"
+						};
+						globalThis.socket.send(JSON.stringify(request));
+						break;
+					}
+				}
+
+				this.update_current_figure();
 
 				let countOfDestroyedLines = 0;
 				// destroying filled lines.
@@ -213,6 +245,12 @@ export class RealWindow extends Window
 					}
 				}
 				this.lines += countOfDestroyedLines;
+				if (this.lines > this.currentLinesLimit)
+				{
+					this.currentLinesLimit = Math.floor(this.currentLinesLimit * 1.5);
+					this.level++;
+				}
+
 				this.timeOut = 1.0 / (this.level / 0.5);
 			}
 			else

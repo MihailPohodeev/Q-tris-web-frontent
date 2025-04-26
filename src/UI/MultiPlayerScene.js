@@ -44,21 +44,52 @@ export class MultiPlayerScene
 
 				if (response.command == "data_frame")
 				{
-						for (let i = 0; i < this.netWindows.length; i++)
-						{
-							const id  = this.netWindows[i].id;
-							const str = "client_" + id;
+					for (let i = 0; i < this.netWindows.length; i++)
+					{
+						const id  = this.netWindows[i].id;
+						const str = "client_" + id;
 
-							const data = response.content[str];
-							console.log(JSON.stringify(data));
-							if (data)
+						const data = response.content[str];
+						if (data)
+						{
+							this.netWindows[i].set_matrix(data.body.content);
+							this.netWindows[i].set_figure(data.body.figure);
+							this.netWindows[i].scoreTable.set_score(data.body.score);
+							this.netWindows[i].scoreTable.set_lines(data.body.lines);
+							this.netWindows[i].scoreTable.set_level(data.body.level);
+						}
+					}
+				}
+				else if (response.command == "get_room_settings_response")
+				{
+					console.log( JSON.stringify(response) );
+					this.window.set_start_level(response.params.start_level);
+					const array = response.clients;
+					for (let i = 0; i < array.length; i++)
+					{
+						if (array[i].id == globalThis.myID)
+						{
+							this.window.set_username(array[i].username);
+							continue;
+						}
+						for (let j = 0; j < this.netWindows.length; j++)
+						{
+							if (array[i].id == this.netWindows[j].id)
 							{
-								this.netWindows[i].set_matrix(data.content);
-								this.netWindows[i].set_figure(data.figure);
+								this.netWindows[j].set_username(array[i].username);
+								break;
 							}
 						}
+					}
 				}
 			};
+
+		const request = 
+		{
+			command : "get_room_settings"
+		};
+
+		globalThis.socket.send(JSON.stringify(request));
 	}
 
 	set_start_level(level)

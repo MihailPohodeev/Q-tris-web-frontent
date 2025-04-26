@@ -44,6 +44,13 @@ export class MultiPlayerRoomConnectionScene
 		back_button.view.position.y = app.screen.height / 2 + 120;
 		this.view = new Container();
 		this.view.addChild(scrollBox, back_button.view);
+        this.roomListPollID = 0;
+
+        this.rooms_list_poll = () =>
+        {
+            const request = { command : "get_rooms_list" };
+            globalThis.socket.send(JSON.stringify(request));
+        }
 
         const item_action = (room_id) => {
             const request = {
@@ -55,21 +62,20 @@ export class MultiPlayerRoomConnectionScene
         };
 
 		back_button.button.onPress.connect((room_id) => {
+            clearInterval(this.roomListPollID);
 			app.stage.removeChild(globalThis.current_scene.view);
             globalThis.current_scene = new EnterenceScene(app);
             app.stage.addChild(globalThis.current_scene.view); 
 		});
 
-        const request = { command : "get_rooms_list" };
-
         globalThis.socket.onmessage = (event) => {
-            console.log('Received data:', event.data);
             const response = JSON.parse(event.data);
             
             if (response.command == "get_rooms_list_response")
             {
                 if (response.status == "success")
                 {
+                    scrollBox.removeItems();
                     const items = [];
                     for (let i = 0; i < response.body.length; i++)
                     {
@@ -110,6 +116,7 @@ export class MultiPlayerRoomConnectionScene
             {
                 if (response.status == "success")
                 {
+                    clearInterval(this.roomListPollID);
                     app.stage.removeChild(globalThis.current_scene.view);
                     globalThis.current_scene = new MultiPlayerLobbyScene(app);
                     app.stage.addChild(globalThis.current_scene.view);
@@ -119,7 +126,7 @@ export class MultiPlayerRoomConnectionScene
             }
         };
 
-        globalThis.socket.send(JSON.stringify(request));
+        this.roomListPollID = setInterval(this.rooms_list_poll, 1000);
 	}
 
     update() {}

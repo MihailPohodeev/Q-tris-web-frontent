@@ -19,7 +19,7 @@ export class Window
 
 		this.view.addChild(this.gameField.view, this.scoreTable.view);
 
-		this.username = "no-name"
+		this.username = "no-name";
 	}
 
 	move(x, y)
