@@ -82,6 +82,18 @@ export class MultiPlayerScene
 						}
 					}
 				}
+				else if (response.command == "end_game")
+				{
+					console.log("end game");
+					app.ticker.add((time) => 
+						{
+							this.view.alpha -= 0.001;
+							if (this.view.alpha < 0.001)
+							{
+								console.log("VSЁ");
+							}
+						});
+				}
 			};
 
 		const request = 

@@ -214,7 +214,8 @@ export class RealWindow extends Window
 						{
 							command : "loose"
 						};
-						globalThis.socket.send(JSON.stringify(request));
+						if (globalThis.socket)
+							globalThis.socket.send( JSON.stringify(request) );
 						break;
 					}
 				}
