@@ -7,7 +7,7 @@ import { MultiPlayerRoomConnectionScene } from './UI/MultiPlayerRoomConnectionSc
   const app = new Application();
 
   // Initialize the application
-  await app.init({ background: "#005000", resizeTo: window });
+  await app.init({ background: "#505050", resizeTo: window });
 
   // Append the application canvas to the document body
   document.getElementById("pixi-container")!.appendChild(app.canvas);

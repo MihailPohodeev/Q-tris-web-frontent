@@ -1,4 +1,4 @@
-import { Container, Graphics} from "pixi.js";
+import { Container, Graphics, Text } from "pixi.js";
 import { RealWindow } from "../RealWindow"
 import { NetWindow } from "../NetWindow"
 
@@ -13,6 +13,8 @@ export class MultiPlayerScene
 		this.window = new RealWindow(sizeXY, sizeXY);
 		this.window.set_position((app.screen.width / 2 - sizeXY) / 2, (app.screen.height - sizeXY) / 2);
 		this.view = new Container();
+		this.gameContainer = new Container();
+		this.resultContainer = new Container();
 
 		this.netWindows = [];
 
@@ -32,11 +34,48 @@ export class MultiPlayerScene
 			nw.set_position(xStart, (app.screen.height - sizeNetXY) / 2);
 			xStart += dist;
 			this.netWindows.push(nw);
-			this.view.addChild(nw.view);
+			this.gameContainer.addChild(nw.view);
 		}
 
-		this.view.addChild(this.window.view);
+		this.gameContainer.addChild(this.window.view);
 
+		const fontColor = 0xffffff;
+		const fontSize  = (app.screen.width + app.screen.height) / 80;
+
+		this.resultLabel = new Text(
+			{
+			text : "RESULT",
+			style: {
+                fontFamily: 'ChaChicle',
+                fontSize: fontSize * 2,
+                fill: fontColor,
+                fontWeight: 'bold',
+                letterSpacing: 0.5,
+            }}
+			);
+
+		this.resultContentLabel = new Text(
+			{
+			text : "",
+			style: {
+                fontFamily: 'ChaChicle',
+                fontSize: fontSize,
+                fill: fontColor,
+                fontWeight: 'bold',
+                letterSpacing: 0.5,
+            }}
+			);
+
+		this.resultLabel.position.x = (app.screen.width - this.resultLabel.width) / 2
+		this.resultLabel.position.y = app.screen.height * 0.1;
+
+		this.resultContentLabel.position.x = (app.screen.width - this.resultContentLabel.width) / 2
+		this.resultContentLabel.position.y = app.screen.height * 0.2;
+
+		this.resultContainer.addChild( this.resultLabel, this.resultContentLabel );
+		this.resultContainer.alpha = 0.0;
+
+		this.view.addChild(this.gameContainer, this.resultContainer);
 
 		globalThis.socket.onmessage = (event) => {
 
@@ -85,14 +124,36 @@ export class MultiPlayerScene
 				else if (response.command == "end_game")
 				{
 					console.log("end game");
-					app.ticker.add((time) => 
-						{
-							this.view.alpha -= 0.001;
-							if (this.view.alpha < 0.001)
-							{
-								console.log("VSЁ");
-							}
-						});
+					console.log( JSON.stringify(response) );
+
+					const tickerCallback = (time) => {
+					    
+					    if (this.gameContainer.alpha < 0.001) {
+					    	if ( this.resultContainer.alpha < 0.9)
+					    	{
+					    		this.resultContainer.alpha += time.deltaTime / 60;
+					    		this.resultContentLabel.text = "";
+					    		for (let i = 0; i < response.players.length; i++)
+					    		{
+					    			this.resultContentLabel.text += "username : " + response.players[i].username + 
+					    											"\nscore : " + response.players[i].score + 
+					    											"\nlines : " + response.players[i].lines + 
+					    											"\nlevel : " + response.players[i].level + "\n\n";
+					    		}
+					        	this.resultContentLabel.position.x = (app.screen.width - this.resultContentLabel.width) / 2
+					    	}
+					        else
+					        {
+					        	app.ticker.remove(tickerCallback);
+					        }
+					    }
+					    else
+					    {
+					    	this.gameContainer.alpha -= time.deltaTime / 60;
+					    }
+					};
+					
+					app.ticker.add(tickerCallback);
 				}
 			};
 
